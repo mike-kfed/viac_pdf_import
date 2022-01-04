@@ -1,7 +1,7 @@
 # VIAC PDF import for Portfolio Performance
 
 Idea, correctly import from VIAC PDFs by creating multiple CSV files for import into PP.
-Avoiding the calculation error for the share-price making buy/sale look wrong on plots, see issue buchen/portfolio#2445
+Avoiding the calculation error for the share-price making buy/sale look wrong on plots, see issue [buchen/portfolio#2445](https://github.com/buchen/portfolio/issues/2545)
 
 ## problems
 
