@@ -1,0 +1,17 @@
+[package]
+name = "viac_pdf_import"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+#pdf = "0.7.2"
+pdf = { git = "https://github.com/pdf-rs/pdf.git", features=["euclid"] }
+#pdf = { path = "/Users/htd/projects/rust-pr/pdf/pdf" }
+pdf_encoding = { git = "https://github.com/pdf-rs/encoding" }
+euclid = "0.22.6"
+chrono = "0.4.19"
+rust_decimal = "1.18.0"
+walkdir = "2.3.2"
+csv = "1.1.6"
