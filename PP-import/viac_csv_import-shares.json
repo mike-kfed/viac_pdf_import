@@ -1,0 +1,16 @@
+{
+  "delimiter": ",",
+  "columns": [
+    { "field": "isin", "label": "ISIN" },
+    { "field": "wkn", "label": "WKN" },
+    { "field": "ticker", "label": "Ticker-Symbol" },
+    { "field": "name", "label": "Wertpapiername" },
+    { "field": "currency", "label": "Währung" },
+    { "field": "note", "label": "Notiz" }
+  ],
+  "isFirstLineHeader": true,
+  "skipLines": 0,
+  "label": "VIAC CSV Import Shares",
+  "encoding": "UTF-8",
+  "target": "investment-vehicle"
+}

@@ -28,10 +28,10 @@ Avoiding the calculation error for the share-price making buy/sale look wrong on
 
 ## howto import
 
-1. import the 3 json files from the `PP-import` folder
-2. import all the CSV files ending with `_Shares.csv`
-3. import all the CSV files ending with `_Konto.csv`
-4. import all the CSV files ending with `_Transactions.csv`
+1. import the 3 JSON files from the `PP-import` folder, they are the configurations for CSV importing
+2. import the CSV file called `VIAC_any_account_Shares.csv` with the "VIAC CSV Import Shares" config
+3. import all the CSV files ending with `_Account.csv` with the "VIAC CSV Import Account" config
+4. import all the CSV files ending with `_Portfolio.csv` with the "VIAC CSV Import Portfolio" config
 
 ## install and run
 
