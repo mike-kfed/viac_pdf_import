@@ -298,9 +298,10 @@ impl ViacPdfExtractor for ViacPdfGerman {
     fn exchange_rate(&self) -> Option<ExchangeRate> {
         self.0
             .title_currency_amount("Umrechnungskurs")
-            .map(|_total| ExchangeRate {
+            .map(|chf_total| ExchangeRate {
                 rate: self.exchange_rate_value(),
                 total_price: self.total_price(),
+                pdf_price: chf_total,
             })
     }
 
@@ -456,9 +457,10 @@ impl ViacPdfExtractor for ViacPdfFrench {
     fn exchange_rate(&self) -> Option<ExchangeRate> {
         self.0
             .title_currency_amount("Taux de conversion")
-            .map(|total| ExchangeRate {
+            .map(|chf_total| ExchangeRate {
                 rate: self.exchange_rate_value(),
-                total_price: total,
+                total_price: self.total_price(),
+                pdf_price: chf_total,
             })
     }
 
@@ -686,6 +688,7 @@ pub struct ViacTransaction {
 pub struct ExchangeRate {
     rate: Decimal,
     total_price: Money,
+    pub pdf_price: Money,
 }
 
 impl ExchangeRate {
