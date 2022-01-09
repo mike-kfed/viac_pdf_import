@@ -298,9 +298,9 @@ impl ViacPdfExtractor for ViacPdfGerman {
     fn exchange_rate(&self) -> Option<ExchangeRate> {
         self.0
             .title_currency_amount("Umrechnungskurs")
-            .map(|total| ExchangeRate {
+            .map(|_total| ExchangeRate {
                 rate: self.exchange_rate_value(),
-                total_price: total,
+                total_price: self.total_price(),
             })
     }
 
@@ -533,7 +533,7 @@ impl ViacDividend {
         // TODO instead of log to stdout, write to comment of transaction
         // TODO use real_shares_count calc from ViacTransaction
         println!(
-            "computed_count: {} pdf_count:{}",
+            "dividend computed_count: {} pdf_count:{}",
             (self.total_price.amount / self.dividend_price.amount).round_dp(5),
             self.shares
         );
@@ -710,15 +710,18 @@ impl ViacTransaction {
     /// only corrects shares amount found if the share-price diverges by more than 1%
     pub fn real_shares_count(&self) -> Decimal {
         // start with higher precision total_price if exchange-rate is given
-        let total_price = match &self.exchange_rate {
-            Some(er) => er.total_price_chf(),
-            None => self.total_price,
+        let (total_price, share_price) = match &self.exchange_rate {
+            Some(er) => (
+                er.total_price_chf(),
+                Money::new("CHF", self.share_price.amount * er.rate),
+            ),
+            None => (self.total_price, self.share_price),
         };
-        assert_eq!(total_price.currency, self.share_price.currency);
+        assert_eq!(total_price.currency, share_price.currency);
         let pp_share_price = total_price.amount / self.shares;
-        let real_count = total_price.amount / self.share_price.amount;
+        let real_count = total_price.amount / share_price.amount;
         //let share_price_diff = (pp_share_price - self.share_price.amount).abs();
-        let share_price_diff = ((Decimal::ONE - (pp_share_price / self.share_price.amount).abs())
+        let share_price_diff = ((Decimal::ONE - (pp_share_price / share_price.amount).abs())
             * Decimal::ONE_HUNDRED)
             .round_dp(4);
         if share_price_diff > Decimal::ONE {
