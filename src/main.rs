@@ -9,8 +9,6 @@ mod viac_pdf;
 
 use viac_pdf::{ViacDocument, ViacPdf, ViacPdfExtractor, ViacSummary};
 
-fn pdf_summary(vpdf: impl ViacPdfExtractor) {}
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let path = args().nth(1).expect("no file given");
     println!("read: {}", path);

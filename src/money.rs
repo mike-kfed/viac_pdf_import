@@ -2,6 +2,8 @@ use std::convert::TryInto;
 
 use rust_decimal::Decimal;
 
+pub(crate) static CHF: [u8; 3] = [0x43, 0x48, 0x46];
+
 #[derive(Clone, Copy)]
 pub struct Money {
     pub currency: [u8; 3],

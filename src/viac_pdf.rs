@@ -526,9 +526,17 @@ pub struct ViacDividend {
     total_price: Money,
     exchange_rate: Option<ExchangeRate>,
 }
+
 impl ViacDividend {
     pub fn real_shares_count(&self) -> Decimal {
         assert_eq!(self.total_price.currency, self.dividend_price.currency);
+        // TODO instead of log to stdout, write to comment of transaction
+        // TODO use real_shares_count calc from ViacTransaction
+        println!(
+            "computed_count: {} pdf_count:{}",
+            (self.total_price.amount / self.dividend_price.amount).round_dp(5),
+            self.shares
+        );
         self.total_price.amount / self.dividend_price.amount
     }
 }
@@ -541,7 +549,7 @@ pub struct ViacValuta {
 
 #[derive(Debug)]
 pub struct ViacSummary {
-    account_number: String,
+    pub account_number: String,
     pub portfolio_number: String,
     pub comment: String,
     pub document_type: ViacDocument,
@@ -680,6 +688,14 @@ pub struct ExchangeRate {
     total_price: Money,
 }
 
+impl ExchangeRate {
+    /// If exchange_rate is given we can use it compute a total_price with more decimal digits
+    pub fn total_price_chf(&self) -> Money {
+        assert_ne!(self.total_price.currency, crate::money::CHF);
+        Money::new("CHF", self.total_price.amount * self.rate)
+    }
+}
+
 impl ViacTransaction {
     pub fn valuta_without_taxes(&self) -> Money {
         match &self.taxes {
@@ -693,15 +709,14 @@ impl ViacTransaction {
 
     /// only corrects shares amount found if the share-price diverges by more than 1%
     pub fn real_shares_count(&self) -> Decimal {
-        /*
-        let total_price = match self.exchange_rate {
-            Some(ExchangeRate { total_price, .. }) => total_price,
+        // start with higher precision total_price if exchange-rate is given
+        let total_price = match &self.exchange_rate {
+            Some(er) => er.total_price_chf(),
             None => self.total_price,
         };
-        */
-        assert_eq!(self.total_price.currency, self.share_price.currency);
-        let pp_share_price = self.total_price.amount / self.shares;
-        let real_count = self.total_price.amount / self.share_price.amount;
+        assert_eq!(total_price.currency, self.share_price.currency);
+        let pp_share_price = total_price.amount / self.shares;
+        let real_count = total_price.amount / self.share_price.amount;
         //let share_price_diff = (pp_share_price - self.share_price.amount).abs();
         let share_price_diff = ((Decimal::ONE - (pp_share_price / self.share_price.amount).abs())
             * Decimal::ONE_HUNDRED)
