@@ -118,7 +118,7 @@ impl<'src, T: Resolve> FontCache<'src, T> {
     }
 
     fn add_font(&mut self, name: impl Into<String>, font: RcRef<Font>) {
-        let decoder = if let Some(to_unicode) = font.to_unicode(&NoResolve) {
+        let decoder = if let Some(to_unicode) = font.to_unicode(self.resolve) {
             let cmap = to_unicode.unwrap();
             Decoder::Cmap(cmap)
         } else if let Some(encoding) = font.encoding() {
