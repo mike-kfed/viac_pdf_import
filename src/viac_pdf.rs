@@ -70,6 +70,19 @@ pub trait ViacPdfExtractor {
         }
     }
 
+    fn dividend(&self) -> ViacDividend {
+        ViacDividend {
+            isin: self.isin(),
+            share_title: self.share_title(),
+            valuta_price: self.valuta_price(),
+            valuta_date: self.valuta_date(),
+            shares: self.shares(),
+            dividend_price: self.dividend_price(),
+            total_price: self.total_price(),
+            exchange_rate: self.exchange_rate(),
+        }
+    }
+
     fn summary(&self) -> Result<ViacSummary, PdfError> {
         let document_type = self.document_type()?;
         let (account_number, portfolio_number) = self.account_numbers();
@@ -209,17 +222,11 @@ impl ViacPdfExtractor for ViacPdfGerman {
         } else if self.0.pages[0].contains("Börsenabrechnung - Verkauf") {
             Ok(ViacDocument::Sale(self.transaction()))
         } else if self.0.pages[0].contains("Dividendenausschüttung") {
-            let d = ViacDividend {
-                isin: self.isin(),
-                share_title: self.share_title(),
-                valuta_price: self.valuta_price(),
-                valuta_date: self.valuta_date(),
-                shares: self.shares(),
-                dividend_price: self.dividend_price(),
-                total_price: self.total_price(),
-                exchange_rate: self.exchange_rate(),
-            };
-            Ok(ViacDocument::Dividend(d))
+            if self.0.pages[0].contains("Rückerstattung Quellensteuer") {
+                Ok(ViacDocument::TaxReturn(self.dividend()))
+            } else {
+                Ok(ViacDocument::Dividend(self.dividend()))
+            }
         } else if self.0.pages[0].contains("Verwaltungsgebühr") {
             let f = ViacValuta {
                 valuta_price: self.valuta_price(),
@@ -368,17 +375,11 @@ impl ViacPdfExtractor for ViacPdfFrench {
         } else if self.0.pages[0].contains("Opération de bourse - Vente") {
             Ok(ViacDocument::Sale(self.transaction()))
         } else if self.0.pages[0].contains("Avis de dividende") {
-            let d = ViacDividend {
-                isin: self.isin(),
-                share_title: self.share_title(),
-                valuta_price: self.valuta_price(),
-                valuta_date: self.valuta_date(),
-                shares: self.shares(),
-                dividend_price: self.dividend_price(),
-                total_price: self.total_price(),
-                exchange_rate: self.exchange_rate(),
-            };
-            Ok(ViacDocument::Dividend(d))
+            if self.0.pages[0].contains("Remboursement d'impôt à la source") {
+                Ok(ViacDocument::TaxReturn(self.dividend()))
+            } else {
+                Ok(ViacDocument::Dividend(self.dividend()))
+            }
         } else if self.0.pages[0].contains("Commission") {
             let f = ViacValuta {
                 valuta_price: self.valuta_price(),
@@ -523,6 +524,7 @@ pub enum ViacDocument {
     Fees(ViacValuta),
     Interest(ViacValuta),
     Incoming(ViacValuta),
+    TaxReturn(ViacDividend),
 }
 
 #[derive(Debug)]
@@ -572,7 +574,7 @@ impl ViacSummary {
                 s.valuta_date
             }
             ViacDocument::Purchase(s) | ViacDocument::Sale(s) => s.valuta_date,
-            ViacDocument::Dividend(s) => s.valuta_date,
+            ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => s.valuta_date,
             _ => unreachable!(),
         }
     }
@@ -585,6 +587,7 @@ impl ViacSummary {
             ViacDocument::Purchase(_) => "Kauf",
             ViacDocument::Sale(_) => "Verkauf",
             ViacDocument::Dividend(_) => "Dividende",
+            ViacDocument::TaxReturn(_) => "Steuerrückerstattung",
             _ => unreachable!(),
         }
         .to_string()
@@ -596,7 +599,7 @@ impl ViacSummary {
                 s.valuta_price
             }
             ViacDocument::Purchase(s) | ViacDocument::Sale(s) => s.valuta_price,
-            ViacDocument::Dividend(s) => s.valuta_price,
+            ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => s.valuta_price,
             _ => unreachable!(),
         };
         (
@@ -616,7 +619,7 @@ impl ViacSummary {
                     .unwrap()
                     .to_string(),
             ),
-            ViacDocument::Dividend(s) => (
+            ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => (
                 s.total_price.amount.to_string(),
                 std::str::from_utf8(&s.total_price.currency)
                     .unwrap()
@@ -632,7 +635,7 @@ impl ViacSummary {
                 .exchange_rate
                 .as_ref()
                 .map_or("".to_owned(), |x| x.rate.to_string()),
-            ViacDocument::Dividend(s) => s
+            ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => s
                 .exchange_rate
                 .as_ref()
                 .map_or("".to_owned(), |x| x.rate.to_string()),
@@ -659,21 +662,23 @@ impl ViacSummary {
             ViacDocument::Purchase(s) | ViacDocument::Sale(s) => {
                 s.real_shares_count().round_dp(5).to_string()
             }
-            ViacDocument::Dividend(s) => s.real_shares_count().round_dp(5).to_string(),
+            ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => {
+                s.real_shares_count().round_dp(5).to_string()
+            }
             _ => "0.00".to_string(),
         }
     }
     pub fn isin(&self) -> String {
         match &self.document_type {
             ViacDocument::Purchase(s) | ViacDocument::Sale(s) => s.isin.to_owned(),
-            ViacDocument::Dividend(s) => s.isin.to_owned(),
+            ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => s.isin.to_owned(),
             _ => "".to_string(),
         }
     }
     pub fn share_title(&self) -> String {
         match &self.document_type {
             ViacDocument::Purchase(s) | ViacDocument::Sale(s) => s.share_title.to_owned(),
-            ViacDocument::Dividend(s) => s.share_title.to_owned(),
+            ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => s.share_title.to_owned(),
             _ => "".to_string(),
         }
     }

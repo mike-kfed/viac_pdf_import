@@ -54,6 +54,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         ViacDocument::Dividend(_) => {
                             println!("{:?}", s);
                         }
+                        ViacDocument::TaxReturn(_) => {
+                            println!("{:?}", s);
+                        }
                         ViacDocument::Purchase(ref t) | ViacDocument::Sale(ref t) => {
                             println!("{:?}", s);
                             println!("Valuta w/o taxes {:?}", &t.valuta_without_taxes());
