@@ -285,9 +285,17 @@ impl ViacPdfExtractor for ViacPdfGerman {
     }
 
     fn exchange_rate_value(&self) -> Decimal {
+        let mut next_line = false;
         for line in self.0.pages[0].lines() {
+            if next_line {
+                return Decimal::from_str(line).unwrap();
+            }
             if line.starts_with("Umrechnungskurs") {
                 if let Some(value) = line.split(' ').nth(2) {
+                    if value.is_empty() {
+                        next_line = true;
+                        continue;
+                    }
                     return Decimal::from_str(value).unwrap();
                 }
             }
