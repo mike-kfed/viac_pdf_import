@@ -522,9 +522,17 @@ pub enum ViacDocument {
     Sale(ViacTransaction),
     Dividend(ViacDividend),
     Fees(ViacValuta),
+    FeesRefund(i32),
     Interest(ViacValuta),
+    InterestCharge(i32),
     Incoming(ViacValuta),
+    Outgoing(i32),
+    Tax(i32),
     TaxReturn(ViacDividend),
+    TransferIn(i32),
+    TransferOut(i32),
+    DeliveryIn(i32),
+    DeliveryOut(i32),
 }
 
 #[derive(Debug)]
@@ -579,15 +587,24 @@ impl ViacSummary {
         }
     }
 
+    /// from name.abuchen.portfolio.model.AccountTransaction enum Type
     pub fn order_type(&self) -> String {
         match &self.document_type {
-            ViacDocument::Interest(_) => "Zinsen",
-            ViacDocument::Fees(_) => "Gebühren",
-            ViacDocument::Incoming(_) => "Einlage",
-            ViacDocument::Purchase(_) => "Kauf",
-            ViacDocument::Sale(_) => "Verkauf",
-            ViacDocument::Dividend(_) => "Dividende",
-            ViacDocument::TaxReturn(_) => "Steuerrückerstattung",
+            ViacDocument::Interest(_) => "INTEREST", // "Zinsen",
+            ViacDocument::InterestCharge(_) => "INTEREST_CHARGE", // "Zinsbelastung"
+            ViacDocument::Fees(_) => "FEES",         //"Gebühren",
+            ViacDocument::FeesRefund(_) => "FEES_REFUND", //"Gebührenrückerstattung",
+            ViacDocument::Incoming(_) => "DEPOSIT",  //"Einlage",
+            ViacDocument::Outgoing(_) => "REMOVAL",  //"Entnahme",
+            ViacDocument::Purchase(_) => "BUY",      //"Kauf",
+            ViacDocument::Sale(_) => "SELL",         // "Verkauf",
+            ViacDocument::Dividend(_) => "DIVIDENDS", //"Dividende",
+            ViacDocument::TaxReturn(_) => "TAX_REFUND", //"Steuerrückerstattung",
+            ViacDocument::Tax(_) => "TAXES",         //"Steuern",
+            ViacDocument::TransferIn(_) => "TRANSFER_IN", //"Umbuchung (Eingang)",
+            ViacDocument::TransferOut(_) => "TRANSFER_OUT", //"Umbuchung (Ausgang)",
+            ViacDocument::DeliveryIn(_) => "DELIVERY_INBOUND", //"Einlieferung",
+            ViacDocument::DeliveryOut(_) => "DELIVERY_OUTBOUND", //"Auslieferung",
             _ => unreachable!(),
         }
         .to_string()

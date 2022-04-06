@@ -57,6 +57,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         ViacDocument::TaxReturn(_) => {
                             println!("{:?}", s);
                         }
+                        ViacDocument::FeesRefund(_)
+                        | ViacDocument::InterestCharge(_)
+                        | ViacDocument::Tax(_)
+                        | ViacDocument::TransferIn(_)
+                        | ViacDocument::TransferOut(_)
+                        | ViacDocument::DeliveryIn(_)
+                        | ViacDocument::DeliveryOut(_)
+                        | ViacDocument::Outgoing(_) => {
+                            unimplemented!();
+                        }
                         ViacDocument::Purchase(ref t) | ViacDocument::Sale(ref t) => {
                             println!("{:?}", s);
                             println!("Valuta w/o taxes {:?}", &t.valuta_without_taxes());

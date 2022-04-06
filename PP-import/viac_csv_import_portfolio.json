@@ -1,10 +1,10 @@
-{
-  "delimiter": ",",
-  "columns": [
-    { "field": "date", "format": "yyyy-MM-dd", "label": "Datum" },
     {
+      "delimiter": ",",
+      "columns": [
+        { "field": "date", "format": "yyyy-MM-dd", "label": "Datum" },
+        {
       "field": "type",
-      "format": "BUY=Kauf;SELL=Verkauf;TRANSFER_IN=Umbuchung (Eingang);TRANSFER_OUT=Umbuchung (Ausgang);DELIVERY_INBOUND=Einlieferung;DELIVERY_OUTBOUND=Auslieferung",
+      "format": "BUY=BUY;SELL=SELL;TRANSFER_IN=TRANSFER_IN;TRANSFER_OUT=TRANSFER_OUT;DELIVERY_INBOUND=DELIVERY_INBOUND;DELIVERY_OUTBOUND=DELIVERY_OUTBOUND",
       "label": "Typ"
     },
     { "field": "value", "format": "0,000.00", "label": "Wert" },

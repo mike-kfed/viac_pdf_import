@@ -4,7 +4,7 @@
     { "field": "date", "format": "yyyy-MM-dd", "label": "Datum" },
     {
       "field": "type",
-      "format": "DEPOSIT=Einlage;REMOVAL=Entnahme;INTEREST=Zinsen;INTEREST_CHARGE=Zinsbelastung;DIVIDENDS=Dividende;FEES=Gebühren;FEES_REFUND=Gebührenerstattung;TAXES=Steuern;TAX_REFUND=Steuerrückerstattung;BUY=Kauf;SELL=Verkauf;TRANSFER_IN=Umbuchung (Eingang);TRANSFER_OUT=Umbuchung (Ausgang)",
+      "format": "DEPOSIT=DEPOSIT;REMOVAL=REMOVAL;INTEREST=INTEREST;INTEREST_CHARGE=INTEREST_CHARGE;DIVIDENDS=DIVIDENDS;FEES=FEES;FEES_REFUND=FEES_REFUND;TAXES=TAXES;TAX_REFUND=TAX_REFUND;BUY=BUY;SELL=SELL;TRANSFER_IN=TRANSFER_IN;TRANSFER_OUT=TRANSFER_OUT",
       "label": "Typ"
     },
     { "field": "value", "format": "0,000.00", "label": "Wert" },
