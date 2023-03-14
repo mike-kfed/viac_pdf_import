@@ -67,11 +67,14 @@ impl FontInfo {
                             Ok(())
                         })
                     })
-                } else if let Ok(text) = std::str::from_utf8(data) {
-                    out.push_str(text);
-                    Ok(())
                 } else {
-                    Err(PdfError::Utf16Decode)
+                    match std::str::from_utf8(data) {
+                        Ok(text) => {
+                            out.push_str(text);
+                            Ok(())
+                        }
+                        Err(_) => Err(PdfError::Utf8Decode),
+                    }
                 }
             }
         }
@@ -101,16 +104,16 @@ impl<'src, T: Resolve> FontCache<'src, T> {
 
     fn populate(&mut self) {
         if let Ok(resources) = self.page.resources() {
-            for (name, &font) in resources.fonts.iter() {
-                if let Ok(font) = self.resolve.get(font) {
-                    self.add_font(name, font);
+            for (name, font) in resources.fonts.iter() {
+                if let Ok(font) = self.resolve.get(font.as_ref().unwrap()) {
+                    self.add_font(name.to_string(), font);
                 }
             }
 
             for (font, _) in resources.graphics_states.values().filter_map(|gs| gs.font) {
                 if let Ok(font) = self.resolve.get(font) {
                     if let Some(name) = &font.name {
-                        self.add_font(name.clone(), font);
+                        self.add_font(name.to_string(), font);
                     }
                 }
             }
@@ -134,7 +137,15 @@ impl<'src, T: Resolve> FontCache<'src, T> {
                 }
             };
 
-            Decoder::Map(DifferenceForwardMap::new(map, encoding.differences.clone()))
+            Decoder::Map(DifferenceForwardMap::new(
+                map,
+                encoding
+                    .differences
+                    .clone()
+                    .into_iter()
+                    .map(|(i, s)| (i, s.to_string()))
+                    .collect(),
+            ))
         } else {
             return;
         };
@@ -159,7 +170,8 @@ impl<'src, T: Resolve> FontCache<'src, T> {
                     .get(font)
                     .ok()
                     .map(|font| {
-                        self.get_by_font_name(font.name.clone().unwrap_or_default().as_str())
+                        let name = format!("{}", font.name.as_ref().unwrap());
+                        self.get_by_font_name(&name)
                     })
                     .unwrap_or_else(|| self.default_font.clone());
 
@@ -209,7 +221,7 @@ pub fn ops_with_text_state<'src, T: Resolve>(
                     }
                     Op::TextFont { ref name, size } => {
                         update_state(&|state: &mut TextState| {
-                            state.font = font_cache.get_by_font_name(name);
+                            state.font = font_cache.get_by_font_name(&format!("{}", name));
                             state.font_size = size;
                         });
                     }
@@ -306,7 +318,7 @@ pub fn page_text(page: &Page, resolve: &impl Resolve) -> Result<String, PdfError
 }
 
 pub(crate) fn pdf2strings<B: pdf::backend::Backend>(
-    file: pdf::file::File<B>,
+    file: pdf::file::CachedFile<B>,
 ) -> Result<Vec<String>, PdfError> {
     let mut all_pages = vec![];
     for page in file.pages().flatten() {

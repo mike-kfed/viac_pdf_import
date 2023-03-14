@@ -10,8 +10,8 @@ edition = "2021"
 pdf = { git = "https://github.com/pdf-rs/pdf.git", features=["euclid"] }
 #pdf = { path = "/Users/htd/projects/rust-pr/pdf/pdf" }
 pdf_encoding = { git = "https://github.com/pdf-rs/encoding" }
-euclid = "0.22.6"
-chrono = "0.4.19"
-rust_decimal = "1.18.0"
+euclid = "0.22.7"
+chrono = "0.4.24"
+rust_decimal = "1.29.0"
 walkdir = "2.3.2"
-csv = "1.1.6"
+csv = "1.2.1"
