@@ -28,71 +28,72 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .filter(|pfn| pfn.path().extension() == pdf_ext)
     {
         eprintln!("{:?}", entry);
-        if let Ok(vpdf) = ViacPdf::from_path(entry.path()) {
-            let s = match vpdf {
-                ViacPdf::French(p) => {
-                    p.print_summary();
-                    p.summary()
-                }
-                ViacPdf::German(p) => {
-                    p.print_summary();
-                    p.summary()
-                }
-            };
-            match s {
-                Ok(s) => {
-                    match s.document_type {
-                        ViacDocument::Interest(_) => {
-                            println!("{:?}", s);
-                        }
-                        ViacDocument::Fees(_) => {
-                            println!("{:?}", s);
-                        }
-                        ViacDocument::Incoming(_) => {
-                            println!("{:?}", s);
-                        }
-                        ViacDocument::Dividend(_) => {
-                            println!("{:?}", s);
-                        }
-                        ViacDocument::TaxReturn(_) => {
-                            println!("{:?}", s);
-                        }
-                        ViacDocument::FeesRefund(_)
-                        | ViacDocument::InterestCharge(_)
-                        | ViacDocument::Tax(_)
-                        | ViacDocument::TransferIn(_)
-                        | ViacDocument::TransferOut(_)
-                        | ViacDocument::DeliveryIn(_)
-                        | ViacDocument::DeliveryOut(_)
-                        | ViacDocument::Outgoing(_) => {
-                            unimplemented!();
-                        }
-                        ViacDocument::Purchase(ref t) | ViacDocument::Sale(ref t) => {
-                            println!("{:?}", s);
-                            println!("Valuta w/o taxes {:?}", &t.valuta_without_taxes());
-                            println!("real shares {:?}", &t.real_shares_count().round_dp(7));
-                        }
-                        ViacDocument::NotViac => {
-                            eprintln!("PDF author is not Viac");
-                            continue;
-                        }
-                        ViacDocument::Unknown => {
-                            eprintln!("UNKNOWN document_type");
-                            continue;
-                        }
+        match ViacPdf::from_path(entry.path()) {
+            Ok(vpdf) => {
+                let s = match vpdf {
+                    ViacPdf::French(p) => {
+                        p.print_summary();
+                        p.summary()
                     }
-                    all_docs
-                        .entry(s.portfolio_number.to_string())
-                        .or_insert_with(Vec::new)
-                        .push(s);
-                }
-                Err(_) => {
-                    eprintln!("ERROR pdf unreadable");
-                    continue;
+                    ViacPdf::German(p) => {
+                        p.print_summary();
+                        p.summary()
+                    }
+                };
+                match s {
+                    Ok(s) => {
+                        match s.document_type {
+                            ViacDocument::Interest(_) => {
+                                println!("{:?}", s);
+                            }
+                            ViacDocument::Fees(_) => {
+                                println!("{:?}", s);
+                            }
+                            ViacDocument::Incoming(_) => {
+                                println!("{:?}", s);
+                            }
+                            ViacDocument::Dividend(_) => {
+                                println!("{:?}", s);
+                            }
+                            ViacDocument::TaxReturn(_) => {
+                                println!("{:?}", s);
+                            }
+                            ViacDocument::FeesRefund(_)
+                            | ViacDocument::InterestCharge(_)
+                            | ViacDocument::Tax(_)
+                            | ViacDocument::TransferIn(_)
+                            | ViacDocument::TransferOut(_)
+                            | ViacDocument::DeliveryIn(_)
+                            | ViacDocument::DeliveryOut(_)
+                            | ViacDocument::Outgoing(_) => {
+                                unimplemented!();
+                            }
+                            ViacDocument::Purchase(ref t) | ViacDocument::Sale(ref t) => {
+                                println!("{:?}", s);
+                                println!("Valuta w/o taxes {:?}", &t.valuta_without_taxes());
+                                println!("real shares {:?}", &t.real_shares_count().round_dp(7));
+                            }
+                            ViacDocument::NotViac => {
+                                eprintln!("PDF author is not Viac");
+                                continue;
+                            }
+                            ViacDocument::Unknown => {
+                                eprintln!("UNKNOWN document_type");
+                                continue;
+                            }
+                        }
+                        all_docs
+                            .entry(s.portfolio_number.to_string())
+                            .or_insert_with(Vec::new)
+                            .push(s);
+                    }
+                    Err(_) => {
+                        eprintln!("ERROR pdf unreadable");
+                        continue;
+                    }
                 }
             }
-        } else {
-            eprintln!("pdf reading error");
+            Err(e) => eprintln!("pdf reading error {e:?}"),
         }
     }
     viac_csv::write_summaries(all_docs)?;
