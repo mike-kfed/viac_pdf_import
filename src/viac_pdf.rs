@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use chrono::{NaiveDate, NaiveDateTime};
 use pdf::error::PdfError;
-use pdf::file::File;
+use pdf::file::FileOptions;
 use rust_decimal::Decimal;
 
 use crate::money::Money;
@@ -19,7 +19,7 @@ impl ViacPdf {
     pub fn from_path(
         path: impl Into<PathBuf> + AsRef<Path> + AsRef<std::ffi::OsStr>,
     ) -> Result<Self, PdfError> {
-        let file = File::<Vec<u8>>::open(&path).unwrap();
+        let file = FileOptions::cached().open(&path).unwrap();
         let mut title = None;
         let mut author = None;
         if let Some(ref info) = file.trailer.info_dict {
@@ -263,7 +263,8 @@ impl ViacPdfExtractor for ViacPdfGerman {
             if line.starts_with("Valuta") {
                 return NaiveDate::parse_from_str(line, "Valuta %d.%m.%Y")
                     .unwrap()
-                    .and_hms(0, 0, 0);
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap();
             }
         }
         unreachable!();
@@ -277,7 +278,8 @@ impl ViacPdfExtractor for ViacPdfGerman {
                     "Am %d.%m.%Y haben wir Ihrem Konto gutgeschrieben:",
                 )
                 .unwrap()
-                .and_hms(0, 0, 0);
+                .and_hms_opt(0, 0, 0)
+                .unwrap();
             }
         }
         unreachable!();
@@ -416,7 +418,8 @@ impl ViacPdfExtractor for ViacPdfFrench {
             if line.starts_with("Valeur") {
                 return NaiveDate::parse_from_str(line, "Valeur %d.%m.%Y")
                     .unwrap()
-                    .and_hms(0, 0, 0);
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap();
             }
         }
         unreachable!();
@@ -430,7 +433,8 @@ impl ViacPdfExtractor for ViacPdfFrench {
                     "Nous avons crédité le %d.%m.%Y les intérêts suivants:",
                 )
                 .unwrap()
-                .and_hms(0, 0, 0);
+                .and_hms_opt(0, 0, 0)
+                .unwrap();
             }
         }
         unreachable!();
