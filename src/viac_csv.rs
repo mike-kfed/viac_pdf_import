@@ -90,13 +90,17 @@ pub fn write_summaries(viac_summaries: HashMap<String, Vec<ViacSummary>>) -> std
                 let isin = summary.isin();
                 let exchange_rate;
                 if !isin.is_empty() {
-                    let dividend_currency = &all_shares.get(&isin).unwrap().currency;
-                    // fake exchange-rate of 1.0 when dividend is not paid in share-currency
-                    if dividend_currency != &total_currency {
-                        total_currency = dividend_currency.to_owned();
-                        exchange_rate = "1.00".to_string();
+                    if let Some(share) = all_shares.get(&isin) {
+                        let share_currency = &share.currency;
+                        // fake exchange-rate of 1.0 when dividend is not paid in share-currency
+                        if share_currency != &total_currency {
+                            total_currency = share_currency.to_owned();
+                            exchange_rate = "1.00".to_string();
+                        } else {
+                            exchange_rate = summary.exchange_rate();
+                        }
                     } else {
-                        exchange_rate = summary.exchange_rate();
+                        panic!("Share {isin} not found, make sure to import all PDFs");
                     }
                 } else {
                     exchange_rate = summary.exchange_rate();
