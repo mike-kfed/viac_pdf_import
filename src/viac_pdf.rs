@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use chrono::{NaiveDate, NaiveDateTime};
+use log::debug;
 use pdf::error::PdfError;
 use pdf::file::FileOptions;
 use rust_decimal::Decimal;
@@ -115,13 +116,13 @@ pub trait ViacPdfExtractor {
 
 impl ViacPdfData {
     pub fn print_summary(&self) {
-        println!("author {:?}", self.author);
-        println!("title {:?}", self.title);
+        debug!("author {:?}", self.author);
+        debug!("title {:?}", self.title);
         self.pages.iter().enumerate().for_each(|(page_nr, text)| {
-            println!("=== PAGE {} ===\n", page_nr);
-            println!("{}", text);
+            debug!("=== PAGE {} ===\n", page_nr);
+            debug!("{}", text);
         });
-        println!();
+        debug!("// --");
     }
 
     pub fn filename(&self) -> String {
@@ -166,7 +167,6 @@ impl ViacPdfData {
                     continue;
                 }
                 let price = line.replace('\'', "");
-                dbg!(&price);
                 return Some(Money::new(currency, Decimal::from_str(&price).unwrap()));
             }
             last_line = line;
@@ -558,7 +558,7 @@ impl ViacDividend {
         assert_eq!(self.total_price.currency, self.dividend_price.currency);
         // TODO instead of log to stdout, write to comment of transaction
         // TODO use real_shares_count calc from ViacTransaction
-        println!(
+        debug!(
             "dividend computed_count: {} pdf_count:{}",
             (self.total_price.amount / self.dividend_price.amount).round_dp(5),
             self.shares
@@ -764,8 +764,8 @@ impl ViacTransaction {
             * Decimal::ONE_HUNDRED)
             .round_dp(4);
         if share_price_diff > Decimal::ONE {
-            // TODO instead of log to stdout, write to comment of transaction
-            println!(
+            // TODO not just log, also write to comment of transaction
+            debug!(
                 "share_price_diff: {}% computed_count: {} pdf_count:{}",
                 share_price_diff,
                 real_count.round_dp(5),

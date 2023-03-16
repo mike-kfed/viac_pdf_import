@@ -68,7 +68,14 @@ impl FontInfo {
                             out.push_str(text);
                             Ok(())
                         }
-                        Err(_) => Err(PdfError::Utf8Decode),
+                        Err(e) => {
+                            log::error!("err: {:?} data: {:?}", e, data);
+                            /* // for debugging show ascii text
+                                let ascii: Vec<u8> =
+                            log::error!("ascii: {:?}", std::str::from_utf8(&ascii));
+                            */
+                            Err(PdfError::Utf8Decode)
+                        }
                     }
                 }
             }
@@ -142,6 +149,7 @@ impl<'src, T: Resolve> FontCache<'src, T> {
                     .collect(),
             ))
         } else {
+            log::error!("cannot handle font {:?} {:?}", name.into(), font);
             return;
         };
 
@@ -150,6 +158,12 @@ impl<'src, T: Resolve> FontCache<'src, T> {
     }
 
     fn get_by_font_name(&self, name: &str) -> Rc<FontInfo> {
+        /* // for debugging when font is not found
+        if !self.fonts.contains_key(name) {
+            let keys: Vec<&String> = self.fonts.keys().collect();
+            log::error!("font: {} not found in {:?}", name, keys);
+        }
+        */
         self.fonts.get(name).unwrap_or(&self.default_font).clone()
     }
 
@@ -169,7 +183,6 @@ impl<'src, T: Resolve> FontCache<'src, T> {
                         self.get_by_font_name(&name)
                     })
                     .unwrap_or_else(|| self.default_font.clone());
-
                 (font, font_size)
             })
     }
@@ -202,7 +215,8 @@ pub fn ops_with_text_state<'src, T: Resolve>(
 
                 match op {
                     Op::BeginText => {
-                        *state = Default::default();
+                        /* do nothing, to keep TextState for decoding */
+                        // *state = Default::default();
                     }
                     Op::GraphicsState { ref name } => {
                         update_state(&|state: &mut TextState| {

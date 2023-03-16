@@ -1,3 +1,4 @@
+use log::{debug, error, info, warn};
 use std::collections::HashMap;
 use std::env::args;
 use std::time::SystemTime;
@@ -10,8 +11,10 @@ mod viac_pdf;
 use viac_pdf::{ViacDocument, ViacPdf, ViacPdfExtractor, ViacSummary};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    env_logger::init();
+
     let path = args().nth(1).expect("no file given");
-    println!("read: {}", path);
+    info!("read: {}", path);
     let now = SystemTime::now();
 
     //let entries = std::fs::read_dir(&path)?
@@ -27,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .filter_map(|e| e.ok())
         .filter(|pfn| pfn.path().extension() == pdf_ext)
     {
-        eprintln!("{:?}", entry);
+        info!("{:?}", entry);
         match ViacPdf::from_path(entry.path()) {
             Ok(vpdf) => {
                 let s = match vpdf {
@@ -44,19 +47,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     Ok(s) => {
                         match s.document_type {
                             ViacDocument::Interest(_) => {
-                                println!("{:?}", s);
+                                debug!("{:?}", s);
                             }
                             ViacDocument::Fees(_) => {
-                                println!("{:?}", s);
+                                debug!("{:?}", s);
                             }
                             ViacDocument::Incoming(_) => {
-                                println!("{:?}", s);
+                                debug!("{:?}", s);
                             }
                             ViacDocument::Dividend(_) => {
-                                println!("{:?}", s);
+                                debug!("{:?}", s);
                             }
                             ViacDocument::TaxReturn(_) => {
-                                println!("{:?}", s);
+                                debug!("{:?}", s);
                             }
                             ViacDocument::FeesRefund(_)
                             | ViacDocument::InterestCharge(_)
@@ -69,16 +72,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 unimplemented!();
                             }
                             ViacDocument::Purchase(ref t) | ViacDocument::Sale(ref t) => {
-                                println!("{:?}", s);
-                                println!("Valuta w/o taxes {:?}", &t.valuta_without_taxes());
-                                println!("real shares {:?}", &t.real_shares_count().round_dp(7));
+                                debug!("{:?}", s);
+                                debug!("Valuta w/o taxes {:?}", &t.valuta_without_taxes());
+                                debug!("real shares {:?}", &t.real_shares_count().round_dp(7));
                             }
                             ViacDocument::NotViac => {
-                                eprintln!("PDF author is not Viac");
+                                warn!("PDF author is not Viac");
                                 continue;
                             }
                             ViacDocument::Unknown => {
-                                eprintln!("UNKNOWN document_type");
+                                warn!("UNKNOWN document_type");
                                 continue;
                             }
                         }
@@ -88,18 +91,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .push(s);
                     }
                     Err(_) => {
-                        eprintln!("ERROR pdf unreadable");
+                        error!("ERROR pdf unreadable");
                         continue;
                     }
                 }
             }
-            Err(e) => eprintln!("pdf reading error {e:?}"),
+            Err(e) => error!("pdf reading error {e:?}"),
         }
     }
     viac_csv::write_summaries(all_docs)?;
 
     if let Ok(elapsed) = now.elapsed() {
-        eprintln!(
+        info!(
             "Time: {}s",
             elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 * 1e-9
         );
