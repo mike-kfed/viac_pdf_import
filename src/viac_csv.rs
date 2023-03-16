@@ -13,7 +13,7 @@ pub fn write_summaries(viac_summaries: HashMap<String, Vec<ViacSummary>>) -> std
     let mut all_shares: HashMap<String, ShareInfo> = HashMap::new();
     let mut file = std::fs::File::create("VIAC_any_account_Shares.csv")?;
     let mut wtr = csv::Writer::from_writer(&mut file);
-    wtr.write_record(&[
+    wtr.write_record([
         "ISIN",
         "WKN",
         "Ticker-Symbol",

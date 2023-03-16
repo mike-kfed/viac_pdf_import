@@ -13,17 +13,12 @@ use pdf_encoding::{self, DifferenceForwardMap};
 
 use euclid::Transform2D;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 enum Decoder {
     Map(DifferenceForwardMap),
     Cmap(ToUnicodeMap),
+    #[default]
     None,
-}
-
-impl Default for Decoder {
-    fn default() -> Self {
-        Decoder::None
-    }
 }
 
 #[derive(Default, Clone)]
@@ -221,7 +216,7 @@ pub fn ops_with_text_state<'src, T: Resolve>(
                     }
                     Op::TextFont { ref name, size } => {
                         update_state(&|state: &mut TextState| {
-                            state.font = font_cache.get_by_font_name(&format!("{}", name));
+                            state.font = font_cache.get_by_font_name(&format!("{name}"));
                             state.font_size = size;
                         });
                     }
