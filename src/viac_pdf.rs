@@ -224,6 +224,8 @@ impl ViacPdfExtractor for ViacPdfGerman {
         } else if self.0.pages[0].contains("Dividendenausschüttung") {
             if self.0.pages[0].contains("Rückerstattung Quellensteuer") {
                 Ok(ViacDocument::TaxReturn(self.dividend()))
+            } else if self.0.pages[0].contains("Korrektur Dividendenausschüttung") {
+                Ok(ViacDocument::Unknown) // TODO: treat storno of dividends
             } else {
                 Ok(ViacDocument::Dividend(self.dividend()))
             }
