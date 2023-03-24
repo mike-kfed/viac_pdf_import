@@ -7,9 +7,9 @@ edition = "2021"
 
 [dependencies]
 #pdf = "0.7.2"
-pdf = { git = "https://github.com/pdf-rs/pdf.git", features=["euclid"] }
+pdf = { git = "https://github.com/pdf-rs/pdf.git", rev="e41c599", features=["euclid"] }
 #pdf = { path = "/Users/htd/projects/rust-pr/pdf/pdf" }
-pdf_encoding = { git = "https://github.com/pdf-rs/encoding" }
+pdf_encoding = { git = "https://github.com/pdf-rs/encoding", rev="2f4f225" }
 euclid = "0.22.7"
 chrono = "0.4.24"
 rust_decimal = "1.29.0"
