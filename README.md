@@ -12,12 +12,14 @@ Avoiding the calculation error for the share-price making buy/sale look wrong on
 ## features
 
 - supports german and french VIAC pdf files
-- changes shares amount to better match the actual share share-price
+- optionally changes shares amount to better match the actual share-price
 - separate export of all securities found in the PDFs
 - separate export of account transactions
 - separate export of portfolio transactions
 - does all math using Decimal rounded to 5 digit precision
 - recursively opens all PDF found in input-directory
+- control output using `RUST_LOG` environment variable
+- optionally converts the ISIN currency to what Portfolio Performance needs.
 
 ## output
 
@@ -38,4 +40,4 @@ Avoiding the calculation error for the share-price making buy/sale look wrong on
 1. follow Rust install instructions of https://rustup.rs/
 2. clone this repo
 3. `cd viac_pdf_importer`
-4. `cargo run --release -- <DIR_WITH_ALL_VIAC_PDF>`
+4. `RUST_LOG=info cargo run --release -- -d <DIR_WITH_ALL_VIAC_PDF>`
