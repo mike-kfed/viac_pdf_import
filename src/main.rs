@@ -18,6 +18,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let path = args.directory;
     info!("read: {}", path.display());
+    info!("isin to currency map: {:?}", &args.isin_currency);
     let now = SystemTime::now();
 
     let entries = walkdir::WalkDir::new(&path).into_iter();
