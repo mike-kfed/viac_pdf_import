@@ -247,6 +247,22 @@ impl ViacPdfExtractor for ViacPdfGerman {
                 valuta_date: self.valuta_date(),
             };
             Ok(ViacDocument::Incoming(i))
+        } else if self.0.pages[0].contains("____impossible_____FeesRefund") {
+            Ok(ViacDocument::FeesRefund(0))
+        } else if self.0.pages[0].contains("____impossible_____InterestCharge") {
+            Ok(ViacDocument::InterestCharge(0))
+        } else if self.0.pages[0].contains("____impossible_____Outgoing") {
+            Ok(ViacDocument::Outgoing(0))
+        } else if self.0.pages[0].contains("____impossible_____Tax") {
+            Ok(ViacDocument::Tax(0))
+        } else if self.0.pages[0].contains("____impossible_____TransferIn") {
+            Ok(ViacDocument::TransferIn(0))
+        } else if self.0.pages[0].contains("____impossible_____TransferOut") {
+            Ok(ViacDocument::TransferOut(0))
+        } else if self.0.pages[0].contains("____impossible_____DeliveryIn") {
+            Ok(ViacDocument::DeliveryIn(0))
+        } else if self.0.pages[0].contains("____impossible_____DeliveryOut") {
+            Ok(ViacDocument::DeliveryOut(0))
         } else {
             Ok(ViacDocument::Unknown)
         }
