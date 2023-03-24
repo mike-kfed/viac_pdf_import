@@ -1,9 +1,10 @@
+use clap::Parser;
 use log::{debug, error, info, warn};
 use std::collections::HashMap;
-use std::env::args;
 use std::time::SystemTime;
 
 mod money;
+mod options;
 mod pdf_text;
 mod viac_csv;
 mod viac_pdf;
@@ -13,20 +14,16 @@ use viac_pdf::{ViacDocument, ViacPdf, ViacPdfExtractor, ViacSummary};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
-    let path = args().nth(1).expect("no file given");
-    info!("read: {}", path);
+    let args = options::Cli::parse();
+
+    let path = args.directory;
+    info!("read: {}", path.display());
     let now = SystemTime::now();
 
-    //let entries = std::fs::read_dir(&path)?
     let entries = walkdir::WalkDir::new(&path).into_iter();
-    /*
-    .map(|res| res.map(|e| e.path()))
-    .collect::<Result<Vec<_>, walkdir::Error>>()?;
-    */
     let mut all_docs: HashMap<String, Vec<ViacSummary>> = HashMap::new();
     let pdf_ext = Some(std::ffi::OsStr::new("pdf"));
     for entry in entries
-        //.filter_map(|e| Some(e.map(|e| e.path())))
         .filter_map(|e| e.ok())
         .filter(|pfn| pfn.path().extension() == pdf_ext)
     {
