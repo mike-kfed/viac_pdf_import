@@ -84,10 +84,11 @@ pub trait ViacPdfExtractor {
         }
     }
 
-    fn summary(&self) -> Result<ViacSummary, PdfError> {
+    fn summary(&self, deduce: bool) -> Result<ViacSummary, PdfError> {
         let document_type = self.document_type()?;
         let (account_number, portfolio_number) = self.account_numbers();
         Ok(ViacSummary {
+            deduce,
             account_number,
             portfolio_number,
             comment: format!("viac_pdf_import {}", self.filename()),
@@ -591,6 +592,7 @@ pub struct ViacValuta {
 
 #[derive(Debug)]
 pub struct ViacSummary {
+    deduce: bool,
     pub account_number: String,
     pub portfolio_number: String,
     pub comment: String,
@@ -699,10 +701,18 @@ impl ViacSummary {
     pub fn shares(&self) -> String {
         match &self.document_type {
             ViacDocument::Purchase(s) | ViacDocument::Sale(s) => {
-                s.real_shares_count().round_dp(5).to_string()
+                if self.deduce {
+                    s.real_shares_count().round_dp(5).to_string()
+                } else {
+                    s.shares.to_string()
+                }
             }
             ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => {
-                s.real_shares_count().round_dp(5).to_string()
+                if self.deduce {
+                    s.real_shares_count().round_dp(5).to_string()
+                } else {
+                    s.shares.to_string()
+                }
             }
             _ => "0.00".to_string(),
         }

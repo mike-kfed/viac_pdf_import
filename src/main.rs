@@ -34,11 +34,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let s = match vpdf {
                     ViacPdf::French(p) => {
                         p.print_summary();
-                        p.summary()
+                        p.summary(args.deduce_amount)
                     }
                     ViacPdf::German(p) => {
                         p.print_summary();
-                        p.summary()
+                        p.summary(args.deduce_amount)
                     }
                 };
                 match s {

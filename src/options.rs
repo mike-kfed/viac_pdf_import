@@ -10,7 +10,7 @@ pub(crate) struct Cli {
     pub directory: PathBuf,
     /// try to deduce the correct amount of stocks bought/sold
     /// attention this can create different problems
-    #[clap(short, long)]
+    #[clap(short = 'A', long)]
     pub deduce_amount: bool,
     /// help convert the currency to the one PP expects
     /// useful for when the Funds online information is in a difference currency than the trade that happens
