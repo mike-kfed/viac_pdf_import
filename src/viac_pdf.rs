@@ -649,19 +649,19 @@ impl ViacSummary {
         )
     }
 
-    pub fn total_price(&self) -> (String, String) {
+    pub fn total_price(&self, conversion_rate: Decimal) -> (String, String) {
         match &self.document_type {
             ViacDocument::Interest(_) | ViacDocument::Fees(_) | ViacDocument::Incoming(_) => {
                 ("".to_owned(), "".to_owned())
             }
             ViacDocument::Purchase(s) | ViacDocument::Sale(s) => (
-                s.total_price.amount.to_string(),
+                (s.total_price.amount * conversion_rate).to_string(),
                 std::str::from_utf8(&s.total_price.currency)
                     .unwrap()
                     .to_string(),
             ),
             ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => (
-                s.total_price.amount.to_string(),
+                (s.total_price.amount * conversion_rate).to_string(),
                 std::str::from_utf8(&s.total_price.currency)
                     .unwrap()
                     .to_string(),
@@ -670,16 +670,36 @@ impl ViacSummary {
         }
     }
 
-    pub fn exchange_rate(&self) -> String {
+    /// VIAC documents are rounded to 2 decimals, exchange rate is therefore not making PP happy, compute it
+    pub fn exchange_rate_compute(&self, conversion_rate: Decimal) -> String {
+        let v = match &self.document_type {
+            ViacDocument::Interest(s) | ViacDocument::Fees(s) | ViacDocument::Incoming(s) => {
+                s.valuta_price
+            }
+            ViacDocument::Purchase(s) | ViacDocument::Sale(s) => s.valuta_price,
+            ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => s.valuta_price,
+            _ => unreachable!(),
+        };
+        let t = match &self.document_type {
+            ViacDocument::Purchase(s) | ViacDocument::Sale(s) => s.total_price,
+            ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => s.total_price,
+            _ => unreachable!(),
+        };
+        (v.amount / t.amount * conversion_rate)
+            .round_dp(5)
+            .to_string()
+    }
+
+    pub fn exchange_rate(&self, conversion_rate: Decimal) -> String {
         match &self.document_type {
             ViacDocument::Purchase(s) | ViacDocument::Sale(s) => s
                 .exchange_rate
                 .as_ref()
-                .map_or("".to_owned(), |x| x.rate.to_string()),
+                .map_or("".to_owned(), |x| (x.rate * conversion_rate).to_string()),
             ViacDocument::Dividend(s) | ViacDocument::TaxReturn(s) => s
                 .exchange_rate
                 .as_ref()
-                .map_or("".to_owned(), |x| x.rate.to_string()),
+                .map_or("".to_owned(), |x| (x.rate * conversion_rate).to_string()),
             _ => "".to_owned(),
         }
     }
@@ -785,7 +805,6 @@ impl ViacTransaction {
         assert_eq!(total_price.currency, share_price.currency);
         let pp_share_price = total_price.amount / self.shares;
         let real_count = total_price.amount / share_price.amount;
-        //let share_price_diff = (pp_share_price - self.share_price.amount).abs();
         let share_price_diff = ((Decimal::ONE - (pp_share_price / share_price.amount).abs())
             * Decimal::ONE_HUNDRED)
             .round_dp(4);

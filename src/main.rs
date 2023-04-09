@@ -3,6 +3,7 @@ use log::{debug, error, info, warn};
 use std::collections::HashMap;
 use std::time::SystemTime;
 
+mod eurofxref;
 mod money;
 mod options;
 mod pdf_text;
@@ -11,7 +12,7 @@ mod viac_pdf;
 
 use viac_pdf::{ViacDocument, ViacPdf, ViacPdfExtractor, ViacSummary};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> anyhow::Result<()> {
     env_logger::init();
 
     let args = options::Cli::parse();
@@ -19,6 +20,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let path = args.directory;
     info!("read: {}", path.display());
     info!("isin to currency map: {:?}", &args.isin_currency);
+    info!("loading Forex data");
+    if !args.isin_currency.is_empty() {
+        eurofxref::read_csv("eurofxref-hist.zip")?;
+        let d = eurofxref::EURO_FOREX.lock().unwrap();
+        let x = d.fetch("2023-03-21", [b'C', b'H', b'F'])?;
+        dbg!(x);
+    }
     let now = SystemTime::now();
 
     let entries = walkdir::WalkDir::new(&path).into_iter();
@@ -97,7 +105,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Err(e) => error!("pdf reading error {e:?}"),
         }
     }
-    viac_csv::write_summaries(all_docs)?;
+    viac_csv::write_summaries(all_docs, args.isin_currency.as_slice())?;
 
     if let Ok(elapsed) = now.elapsed() {
         info!(

@@ -41,3 +41,7 @@ Avoiding the calculation error for the share-price making buy/sale look wrong on
 2. clone this repo
 3. `cd viac_pdf_importer`
 4. `RUST_LOG=info cargo run --release -- -d <DIR_WITH_ALL_VIAC_PDF>`
+
+## historical exchange rates
+
+can be found here <https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html>
